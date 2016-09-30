@@ -10,8 +10,6 @@ OBJObject::OBJObject(const char *filepath)
 
 void OBJObject::parse(const char *filepath) 
 {
-	//TODO parse the OBJ file
-	
 	FILE* fp;     // file pointer
 	float x, y, z;  // vertex coordinates
 	float r, g, b;  // vertex color
@@ -23,16 +21,11 @@ void OBJObject::parse(const char *filepath)
 		std::cerr << "error loading file" << std::endl; 
 		exit(-1); 
 	}  // just in case the file can't be found or is corrupt
-
-	
 	
 	// Repeat until end of file
 	while (c1 != EOF || c2 != EOF) {
 		c1 = fgetc(fp);
 		c2 = fgetc(fp);
-
-		// DEBUG 
-		//std::cout << "c1: " << c1 << ", c2: " << c2 << std::endl;
 		
 		// Check if line is a vertex
 		if ((c1 == 'v') && (c2 == ' '))
@@ -40,7 +33,6 @@ void OBJObject::parse(const char *filepath)
 			fscanf(fp, "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
 			parser_vec3 = glm::vec3(x, y, z);
 			vertices.push_back(parser_vec3);
-			// DEBUG std::cout << "v " << x << " " << y << " " << z << std::endl;
 		}
 
 		// read normal data accordingly
@@ -49,12 +41,8 @@ void OBJObject::parse(const char *filepath)
 			fscanf(fp, "%f %f %f", &x, &y, &z);
 			parser_vec3 = glm::vec3(x, y, z);
 			normals.push_back(parser_vec3);
-			// DEBUG std::cout << "vn " << x << " " << y << " " << z << std::endl;
 		}
-		// DEBUG std::cout << x << " " << y << " " << z << std::endl;
 	}
-	// DEBUG std::cout << "Done!" << std::endl;
-	
 
 	fclose(fp);   // make sure you don't forget to close the file when done
 	
@@ -73,6 +61,10 @@ void OBJObject::draw()
 	// Loop through all the vertices of this OBJ Object and render them
 	for (unsigned int i = 0; i < vertices.size(); ++i) 
 	{
+		GLfloat normal_x = (glm::normalize(normals[i].x) + 1.0f) / 2;
+		GLfloat normal_y = (glm::normalize(normals[i].y) + 1.0f) / 2;
+		GLfloat normal_z = (glm::normalize(normals[i].z) + 1.0f) / 2;
+		glColor3f(normal_x, normal_y, normal_z);
 		glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
 	}
 	glEnd();
@@ -81,3 +73,17 @@ void OBJObject::draw()
 	// This will undo the multiply we did earlier
 	glPopMatrix();
 }
+
+void OBJObject::update()
+{
+	spin(1.0f);
+}
+
+void OBJObject::spin(float deg)
+{
+	this->angle += deg;
+	if (this->angle > 360.0f || this->angle < -360.0f) this->angle = 0.0f;
+	// This creates the matrix to rotate the cube
+	this->toWorld = glm::rotate(glm::mat4(1.0f), this->angle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+}
+

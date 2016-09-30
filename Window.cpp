@@ -8,6 +8,10 @@ Cube cube(5.0f);
 OBJObject bunny = OBJObject("bunny.obj");
 OBJObject bear = OBJObject("bear.obj");
 OBJObject dragon = OBJObject("dragon.obj");
+bool showBunny = false;
+bool showBear = false;
+bool showDragon = false;
+float pointSize = 1.0f;
 
 int Window::width;
 int Window::height;
@@ -18,6 +22,7 @@ void Window::initialize_objects()
 
 void Window::clean_up()
 {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 GLFWwindow* Window::create_window(int width, int height)
@@ -73,8 +78,22 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-	// Perform any updates as necessary. Here, we will spin the cube slightly.
-	cube.update();
+	// Perform any updates as necessary. Here, we will spin the object slightly.
+	if (!showDragon && !showBear && !showBunny)
+	{
+		cube.update();
+	}
+	else if (showBunny)
+	{
+		bunny.update();
+	}
+	else if (showBear)
+	{
+		bear.update();
+	}
+	else {
+		dragon.update();
+	}
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -87,10 +106,21 @@ void Window::display_callback(GLFWwindow* window)
 	glLoadIdentity();
 	
 	// Render objects
-	// cube.draw();
-	bunny.draw();
-	// dragon.draw();
-	// bear.draw();
+	if (!showBunny && !showBear && !showDragon)
+	{
+		cube.draw();
+	}
+	else if (showBunny)
+	{
+		bunny.draw();
+	}
+	else if (showBear) {
+		bear.draw();
+	}
+	else if (showDragon)
+	{
+		dragon.draw();
+	}
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -109,23 +139,184 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
-		// Check if F1 was pressed
+
+		// F1 BUNNY
 		else if (key == GLFW_KEY_F1)
 		{
 			// Show the bunny
-			clean_up();
+			if (!showBunny)
+			{
+				clean_up();
+				showBunny = true;
+				showBear = false;
+				showDragon = false;
+			}
 		}
-		else if (key == GLFW_KEY_F1)
+
+		// F2 DRAGON
+		else if (key == GLFW_KEY_F2)
 		{
 			// Show the dragon
-			clean_up();
-
+			if (!showDragon)
+			{
+				clean_up();
+				showBunny = false;
+				showBear = false;
+				showDragon = true;
+			}
 		}
+
+		// F3 BEAR
 		else if (key == GLFW_KEY_F3) 
 		{
 			// Show the bear
-			clean_up();
+			if (!showBear)
+			{
+				clean_up();
+				showBunny = false;
+				showBear = true;
+				showDragon = false;
+			}
+		}
+
+		// P POINT SIZE
+		else if (key == GLFW_KEY_P)
+		{
+			// P
+			if (mods == GLFW_MOD_SHIFT)
+			{
+				pointSize = pointSize + 1;
+			}
+
+			// p
+			else 
+			{
+				if (pointSize >= 1) {
+					pointSize = pointSize - 1;
+					if (pointSize < 1) 
+					{
+						pointSize = 1;
+					}
+				}
+			}
+			glPointSize(pointSize);
+		}
+
+		// X MOVE X
+		else if (key == GLFW_KEY_X)
+		{
+			// X
+			if (mods == GLFW_MOD_SHIFT)
+			{
+				
+			}
+
+			// x
+			else
+			{
+
+			}
 
 		}
+
+		// Y MOVE Y
+		else if (key == GLFW_KEY_Y)
+		{
+			// Y
+			if (mods == GLFW_MOD_SHIFT)
+			{
+
+			}
+
+			// y
+			else
+			{
+
+			}
+
+		}
+
+		// Z MOVE Z
+		else if (key == GLFW_KEY_Z)
+		{
+			// Z
+			if (mods == GLFW_MOD_SHIFT)
+			{
+
+			}
+
+			// z
+			else
+			{
+
+			}
+
+		}
+
+
+		// S SCALE MODEL
+		else if (key == GLFW_KEY_S)
+		{
+			// S
+			if (mods == GLFW_MOD_SHIFT)
+			{
+
+			}
+
+			// s
+			else
+			{
+
+			}
+
+		}
+
+		// O ORBIT MODEL
+		else if (key == GLFW_KEY_O)
+		{
+			// O
+			if (mods == GLFW_MOD_SHIFT)
+			{
+
+			}
+
+			// o
+			else
+			{
+
+			}
+
+		}
+
+		// R RESET
+		else if (key == GLFW_KEY_R)
+		{
+			if (showBunny)
+			{
+				bunny = OBJObject("bunny.obj");
+			}
+			else if (showDragon)
+			{
+				dragon = OBJObject("dragon.obj");
+			}
+			else if (showBear)
+			{
+				bear = OBJObject("bear.obj");
+			}
+			else
+			{
+				cube = Cube(5.0f);
+			}
+
+			pointSize = 1;
+			glPointSize(pointSize);
+		}
+
+		// M RASTER
+		else if (key == GLFW_KEY_M)
+		{
+
+		}
+
 	}
 }

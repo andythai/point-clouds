@@ -21,12 +21,15 @@ std::vector<unsigned int> indices;
 std::vector<glm::vec3> vertices;
 std::vector<glm::vec3> normals;
 glm::mat4 toWorld;
+float angle;
 
 public:
 	OBJObject(const char* filepath);
 
 	void parse(const char* filepath);
 	void draw();
+	void update();
+	void spin(float deg);
 };
 
 #endif
