@@ -26,6 +26,7 @@ public:
 	static void idle_callback();
 	static void display_callback(GLFWwindow*);
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static bool getDisplayMode();
 };
 
 #endif

@@ -94,7 +94,7 @@ void errorCallback(int error, const char* description)
 	fputs(description, stderr);
 }
 
-int main(int argc, char** argv) {
+int main2(int argc, char** argv) {
 	// Initialize GLFW
 	if (!glfwInit())
 	{
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
 	// Create the GLFW window
-	GLFWwindow* window = glfwCreateWindow(window_height, window_height, "Rastizer", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(window_height, window_height, "Rasterizer", NULL, NULL);
 
 	// Check if the window could not be created
 	if (!window)

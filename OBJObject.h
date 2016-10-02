@@ -21,15 +21,25 @@ std::vector<unsigned int> indices;
 std::vector<glm::vec3> vertices;
 std::vector<glm::vec3> normals;
 glm::mat4 toWorld;
-float angle;
+float xPos, yPos, zPos, yAngle, zAngle;
+float sizeMult = 1;
+float pointSize = 1.0f;
+
 
 public:
+	OBJObject();
 	OBJObject(const char* filepath);
 
 	void parse(const char* filepath);
 	void draw();
 	void update();
 	void spin(float deg);
+	void translate(float x, float y, float z);
+	void scale(float mult);
+	void restore();
+	void orbit(float deg);
+	void resizePoint(float size);
+	float getPointSize();
 };
 
 #endif

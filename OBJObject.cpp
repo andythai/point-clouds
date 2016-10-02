@@ -2,6 +2,11 @@
 #include "OBJObject.h"
 #include <iostream>
 
+OBJObject::OBJObject()
+{
+	toWorld = glm::mat4(1.0f);
+}
+
 OBJObject::OBJObject(const char *filepath) 
 {
 	toWorld = glm::mat4(1.0f);
@@ -46,7 +51,7 @@ void OBJObject::parse(const char *filepath)
 
 	fclose(fp);   // make sure you don't forget to close the file when done
 	
-	// Populate the face indices, vertices, and normals vectors with the OBJ Object data
+	// Populates the vertices and normals vectors with the OBJ Object data
 }
 
 void OBJObject::draw() 
@@ -61,9 +66,9 @@ void OBJObject::draw()
 	// Loop through all the vertices of this OBJ Object and render them
 	for (unsigned int i = 0; i < vertices.size(); ++i) 
 	{
-		GLfloat normal_x = (glm::normalize(normals[i].x) + 1.0f) / 2;
-		GLfloat normal_y = (glm::normalize(normals[i].y) + 1.0f) / 2;
-		GLfloat normal_z = (glm::normalize(normals[i].z) + 1.0f) / 2;
+		GLfloat normal_x = (glm::normalize(normals[i].x) + 1.0f) / 2.0f;
+		GLfloat normal_y = (glm::normalize(normals[i].y) + 1.0f) / 2.0f;
+		GLfloat normal_z = (glm::normalize(normals[i].z) + 1.0f) / 2.0f;
 		glColor3f(normal_x, normal_y, normal_z);
 		glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
 	}
@@ -81,9 +86,89 @@ void OBJObject::update()
 
 void OBJObject::spin(float deg)
 {
-	this->angle += deg;
-	if (this->angle > 360.0f || this->angle < -360.0f) this->angle = 0.0f;
-	// This creates the matrix to rotate the cube
-	this->toWorld = glm::rotate(glm::mat4(1.0f), this->angle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	this->yAngle += deg;
+	if (this->yAngle >= 360.0f || this->yAngle <= -360.0f)
+	{
+		this->yAngle = 0.0f;
+	}
+
+	// This creates the matrix to rotate the object
+	this->toWorld = glm::rotate(this->toWorld, deg / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
+void OBJObject::orbit(float deg)
+{
+	this->zAngle += deg;
+	
+	if (this->zAngle >= 360.0f || this->zAngle <= -360.0f)
+	{
+		this->zAngle = 0.0f;
+	}
+	
+	// This creates the matrix to rotate the object
+	this->toWorld = glm::rotate(this->toWorld, -yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	this->toWorld = glm::rotate(this->toWorld, deg / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
+	this->toWorld = glm::rotate(this->toWorld, yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+void OBJObject::translate(float x, float y, float z)
+{
+	// Reset scale
+	float scaleSizeCopy = this->sizeMult;
+	this->toWorld = glm::scale(this->toWorld, glm::vec3(1 / scaleSizeCopy, 1 / scaleSizeCopy, 1 / scaleSizeCopy));
+
+	this->toWorld = glm::rotate(this->toWorld, -yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	this->toWorld = glm::rotate(this->toWorld, -zAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
+	
+	this->toWorld = glm::translate(this->toWorld, glm::vec3(x, y, z));
+	this->toWorld = glm::rotate(this->toWorld, zAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
+	this->toWorld = glm::rotate(this->toWorld, yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	this->xPos += x;
+	this->yPos += y;
+	this->zPos += z;
+	this->toWorld = glm::scale(this->toWorld, glm::vec3(scaleSizeCopy, scaleSizeCopy, scaleSizeCopy));
+}
+
+void OBJObject::scale(float mult)
+{
+	this->toWorld = glm::scale(this->toWorld, glm::vec3(mult, mult, mult));
+	this->sizeMult *= mult;
+}
+
+void OBJObject::resizePoint(float size)
+{
+	this->pointSize += size;
+	if (this->pointSize < 1.0f)
+	{
+		this->pointSize = 1.0f;
+	}
+	glPointSize(this->pointSize);
+}
+
+float OBJObject::getPointSize()
+{
+	return this->pointSize;
+}
+
+void OBJObject::restore()
+{
+
+	// Reset scale
+	scale(1.0f / this->sizeMult);
+	this->sizeMult = 1.0f;
+
+	// Reset orientation
+	this->toWorld = glm::rotate(this->toWorld, -yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	this->toWorld = glm::rotate(this->toWorld, -zAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
+	
+	this->zAngle = 0.0f;
+	this->yAngle = 0.0f;
+
+
+	// Reset x, y, z coords
+	translate(-xPos, -yPos, -zPos);
+
+	// Reset point size
+	pointSize = 1.0f;
+	glPointSize(1.0f);
+}

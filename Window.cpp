@@ -7,14 +7,28 @@ Cube cube(5.0f);
 // Load models in at startup
 OBJObject bunny = OBJObject("bunny.obj");
 OBJObject bear = OBJObject("bear.obj");
-OBJObject dragon = OBJObject("dragon.obj");
+OBJObject dragon = OBJObject("dragon.obj"); 
+
+// Variables indicating which model to load
 bool showBunny = false;
 bool showBear = false;
 bool showDragon = false;
-float pointSize = 1.0f;
 
+// Settings, keep values positive
+const float POINT_SIZE_MODIFIER = 1.0f;		// How much to increase point size
+const float X_POS_MODIFIER = 1.0f;			// How much to move right on x-axis
+const float Y_POS_MODIFIER = 1.0f;			// How much to move up on y-axis
+const float Z_POS_MODIFIER = 1.0f;			// How much to move away from screen on z-axis
+const float SCALE_UP_MODIFIER = 1.1f;		// Factor for how much to scale object up by
+const float SCALE_DOWN_MODIFIER = 0.9f;		// Factor for how much to scale object down by
+const float ORBIT_MODIFIER = 5.0f;			// How much to orbit the object by
+
+// Window size variables declaration
 int Window::width;
 int Window::height;
+
+// Display mode
+bool DISPLAY_MODE = true;	// True: OpenGL, False: Rasterizer
 
 void Window::initialize_objects()
 {
@@ -23,6 +37,11 @@ void Window::initialize_objects()
 void Window::clean_up()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+bool Window::getDisplayMode()
+{
+	return DISPLAY_MODE;
 }
 
 GLFWwindow* Window::create_window(int width, int height)
@@ -83,6 +102,7 @@ void Window::idle_callback()
 	{
 		cube.update();
 	}
+	
 	else if (showBunny)
 	{
 		bunny.update();
@@ -94,6 +114,7 @@ void Window::idle_callback()
 	else {
 		dragon.update();
 	}
+	
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -150,6 +171,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				showBunny = true;
 				showBear = false;
 				showDragon = false;
+				glPointSize(bunny.getPointSize());
 			}
 		}
 
@@ -163,6 +185,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				showBunny = false;
 				showBear = false;
 				showDragon = true;
+				glPointSize(dragon.getPointSize());
 			}
 		}
 
@@ -176,6 +199,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				showBunny = false;
 				showBear = true;
 				showDragon = false;
+				glPointSize(bear.getPointSize());
 			}
 		}
 
@@ -185,21 +209,36 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// P
 			if (mods == GLFW_MOD_SHIFT)
 			{
-				pointSize = pointSize + 1;
+				if (showBunny)
+				{
+					bunny.resizePoint(POINT_SIZE_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.resizePoint(POINT_SIZE_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.resizePoint(POINT_SIZE_MODIFIER);
+				}
 			}
 
 			// p
 			else 
 			{
-				if (pointSize >= 1) {
-					pointSize = pointSize - 1;
-					if (pointSize < 1) 
-					{
-						pointSize = 1;
-					}
+				if (showBunny)
+				{
+					bunny.resizePoint(-POINT_SIZE_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.resizePoint(-POINT_SIZE_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.resizePoint(-POINT_SIZE_MODIFIER);
 				}
 			}
-			glPointSize(pointSize);
 		}
 
 		// X MOVE X
@@ -208,13 +247,35 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// X
 			if (mods == GLFW_MOD_SHIFT)
 			{
-				
-			}
+				if (showBunny)
+				{
+					bunny.translate(X_POS_MODIFIER, 0, 0);
+				}
+				else if (showDragon)
+				{
+					dragon.translate(X_POS_MODIFIER, 0, 0);
+				}
+				else if (showBear)
+				{
+					bear.translate(X_POS_MODIFIER, 0, 0);
+				}
 
+			}
 			// x
 			else
 			{
-
+				if (showBunny)
+				{
+					bunny.translate(-X_POS_MODIFIER, 0, 0);
+				}
+				else if (showDragon)
+				{
+					dragon.translate(-X_POS_MODIFIER, 0, 0);
+				}
+				else if (showBear)
+				{
+					bear.translate(-X_POS_MODIFIER, 0, 0);
+				}
 			}
 
 		}
@@ -222,16 +283,46 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		// Y MOVE Y
 		else if (key == GLFW_KEY_Y)
 		{
+			if (!showBunny && !showDragon && !showBear)
+			{
+				return;
+			}
+
 			// Y
 			if (mods == GLFW_MOD_SHIFT)
 			{
-
+				
+				if (showBunny) 
+				{
+						bunny.translate(0, Y_POS_MODIFIER, 0);
+				}
+				else if (showDragon)
+				{
+						dragon.translate(0, Y_POS_MODIFIER, 0);
+				}
+				else if (showBear)
+				{
+						bear.translate(0, Y_POS_MODIFIER, 0);
+				}
+				
 			}
 
 			// y
 			else
 			{
-
+				
+				if (showBunny)
+				{
+						bunny.translate(0, -Y_POS_MODIFIER, 0);
+				}
+				else if (showDragon)
+				{
+						dragon.translate(0, -Y_POS_MODIFIER, 0);
+				}
+				else if (showBear)
+				{
+						bear.translate(0, -Y_POS_MODIFIER, 0);
+				}
 			}
 
 		}
@@ -242,17 +333,37 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// Z
 			if (mods == GLFW_MOD_SHIFT)
 			{
-
+				if (showBunny)
+				{
+					bunny.translate(0, 0, Z_POS_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.translate(0, 0, Z_POS_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.translate(0, 0, Z_POS_MODIFIER);
+				}
 			}
 
 			// z
 			else
 			{
-
+				if (showBunny)
+				{
+					bunny.translate(0, 0, -Z_POS_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.translate(0, 0, -Z_POS_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.translate(0, 0, -Z_POS_MODIFIER);
+				}
 			}
-
 		}
-
 
 		// S SCALE MODEL
 		else if (key == GLFW_KEY_S)
@@ -260,30 +371,74 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// S
 			if (mods == GLFW_MOD_SHIFT)
 			{
-
+				if (showBunny)
+				{
+					bunny.scale(SCALE_UP_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.scale(SCALE_UP_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.scale(SCALE_UP_MODIFIER);
+				}
 			}
 
 			// s
 			else
 			{
-
+				if (showBunny)
+				{
+					bunny.scale(SCALE_DOWN_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.scale(SCALE_DOWN_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.scale(SCALE_DOWN_MODIFIER);
+				}
 			}
 
 		}
-
+		
 		// O ORBIT MODEL
 		else if (key == GLFW_KEY_O)
 		{
 			// O
 			if (mods == GLFW_MOD_SHIFT)
 			{
-
+				if (showBunny)
+				{
+					bunny.orbit(ORBIT_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.orbit(ORBIT_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.orbit(ORBIT_MODIFIER);
+				}
 			}
 
 			// o
 			else
 			{
-
+				if (showBunny)
+				{
+					bunny.orbit(-ORBIT_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.orbit(-ORBIT_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.orbit(-ORBIT_MODIFIER);
+				}
 			}
 
 		}
@@ -293,29 +448,22 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		{
 			if (showBunny)
 			{
-				bunny = OBJObject("bunny.obj");
+				bunny.restore();
 			}
 			else if (showDragon)
 			{
-				dragon = OBJObject("dragon.obj");
+				dragon.restore();
 			}
 			else if (showBear)
 			{
-				bear = OBJObject("bear.obj");
+				bear.restore();
 			}
-			else
-			{
-				cube = Cube(5.0f);
-			}
-
-			pointSize = 1;
-			glPointSize(pointSize);
 		}
 
 		// M RASTER
 		else if (key == GLFW_KEY_M)
 		{
-
+			DISPLAY_MODE = false;
 		}
 
 	}

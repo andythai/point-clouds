@@ -2,6 +2,8 @@
 
 GLFWwindow* window;
 
+bool MAIN_DISPLAY_MODE = true;	// True: OpenGL, False: Rasterizer
+
 void error_callback(int error, const char* description)
 {
 	// Print error
@@ -98,7 +100,15 @@ int main(void)
 	while (!glfwWindowShouldClose(window))
 	{
 		// Main render display callback. Rendering of objects is done here.
-		Window::display_callback(window);
+		MAIN_DISPLAY_MODE = Window::getDisplayMode();
+		if (MAIN_DISPLAY_MODE == true)
+		{
+			Window::display_callback(window);
+		}
+		else
+		{
+			// GLFW_Rasterizer::displayCallback(window);
+		}
 		// Idle callback. Updating objects, etc. can be done here.
 		Window::idle_callback();
 	}
