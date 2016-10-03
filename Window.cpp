@@ -412,23 +412,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			{
 				if (showBunny)
 				{
-					bunny.orbit(ORBIT_MODIFIER);
-				}
-				else if (showBear)
-				{
-					bear.orbit(ORBIT_MODIFIER);
-				}
-				else if (showDragon)
-				{
-					dragon.orbit(ORBIT_MODIFIER);
-				}
-			}
-
-			// o
-			else
-			{
-				if (showBunny)
-				{
 					bunny.orbit(-ORBIT_MODIFIER);
 				}
 				else if (showBear)
@@ -438,6 +421,23 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				else if (showDragon)
 				{
 					dragon.orbit(-ORBIT_MODIFIER);
+				}
+			}
+
+			// o
+			else
+			{
+				if (showBunny)
+				{
+					bunny.orbit(ORBIT_MODIFIER);
+				}
+				else if (showBear)
+				{
+					bear.orbit(ORBIT_MODIFIER);
+				}
+				else if (showDragon)
+				{
+					dragon.orbit(ORBIT_MODIFIER);
 				}
 			}
 
