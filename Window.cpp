@@ -21,7 +21,7 @@ const float Y_POS_MODIFIER = 1.0f;			// How much to move up on y-axis
 const float Z_POS_MODIFIER = 1.0f;			// How much to move away from screen on z-axis
 const float SCALE_UP_MODIFIER = 1.1f;		// Factor for how much to scale object up by
 const float SCALE_DOWN_MODIFIER = 0.9f;		// Factor for how much to scale object down by
-const float ORBIT_MODIFIER = 5.0f;			// How much to orbit the object by
+const float ORBIT_MODIFIER = 20.0f;			// How much to orbit the object by
 
 // Window size variables declaration
 int Window::width;
@@ -463,7 +463,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		// M RASTER
 		else if (key == GLFW_KEY_M)
 		{
-			DISPLAY_MODE = false;
+			DISPLAY_MODE = !DISPLAY_MODE;
 		}
 
 	}

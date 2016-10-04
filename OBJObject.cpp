@@ -98,41 +98,55 @@ void OBJObject::spin(float deg)
 
 void OBJObject::orbit(float deg)
 {
-	this->zAngle += deg;
 	
-	if (this->zAngle >= 360.0f || this->zAngle <= -360.0f)
-	{
-		this->zAngle = 0.0f;
-	}
-	
-	// This creates the matrix to rotate the object
-	this->toWorld = glm::rotate(this->toWorld, -yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	this->toWorld = glm::rotate(this->toWorld, deg / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
-	this->toWorld = glm::rotate(this->toWorld, yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	float radians = deg / 180.0f * glm::pi<float>();
+	glm::mat4 matrix =
+	{ cos(radians), sin(radians), 0, 0,
+		-sin(radians), cos(radians), 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1 };
+
+	this->toWorld = matrix * this->toWorld;	
 }
 
 void OBJObject::translate(float x, float y, float z)
 {
-	// Reset scale
-	float scaleSizeCopy = this->sizeMult;
-	this->toWorld = glm::scale(this->toWorld, glm::vec3(1 / scaleSizeCopy, 1 / scaleSizeCopy, 1 / scaleSizeCopy));
+	glm::mat4 matrix =
+	{ 1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		x, y, z, 1 };
 
-	this->toWorld = glm::rotate(this->toWorld, -yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	this->toWorld = glm::rotate(this->toWorld, -zAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
-	
-	this->toWorld = glm::translate(this->toWorld, glm::vec3(x, y, z));
-	this->toWorld = glm::rotate(this->toWorld, zAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
-	this->toWorld = glm::rotate(this->toWorld, yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	this->xPos += x;
-	this->yPos += y;
-	this->zPos += z;
-	this->toWorld = glm::scale(this->toWorld, glm::vec3(scaleSizeCopy, scaleSizeCopy, scaleSizeCopy));
+	this->toWorld = matrix * this->toWorld;
 }
 
 void OBJObject::scale(float mult)
 {
-	this->toWorld = glm::scale(this->toWorld, glm::vec3(mult, mult, mult));
-	this->sizeMult *= mult;
+	glm::mat4 scale_matrix =
+	{ mult, 0, 0, 0,
+		0, mult, 0, 0,
+		0, 0, mult, 0,
+		0, 0, 0, 1 };
+
+	float matX = this->toWorld[3][0];
+	float matY = this->toWorld[3][1];
+	float matZ = this->toWorld[3][2];
+
+	glm::mat4 to_origin_matrix =
+	{ 1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		-matX, -matY, -matZ, 1 };
+
+	glm::mat4 reset_matrix =
+	{ 1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		matX, matY, matZ, 1 };
+	
+	this->toWorld = to_origin_matrix * this->toWorld;
+	this->toWorld = scale_matrix * this->toWorld;
+	this->toWorld = reset_matrix * this->toWorld;
 }
 
 void OBJObject::resizePoint(float size)
@@ -152,23 +166,7 @@ float OBJObject::getPointSize()
 
 void OBJObject::restore()
 {
-
-	// Reset scale
-	scale(1.0f / this->sizeMult);
-	this->sizeMult = 1.0f;
-
-	// Reset orientation
-	this->toWorld = glm::rotate(this->toWorld, -yAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	this->toWorld = glm::rotate(this->toWorld, -zAngle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
-	
-	this->zAngle = 0.0f;
-	this->yAngle = 0.0f;
-
-
-	// Reset x, y, z coords
-	translate(-xPos, -yPos, -zPos);
-
-	// Reset point size
+	this->toWorld = glm::mat4(1.0f);
 	pointSize = 1.0f;
 	glPointSize(1.0f);
 }

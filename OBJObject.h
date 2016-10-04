@@ -21,10 +21,8 @@ std::vector<unsigned int> indices;
 std::vector<glm::vec3> vertices;
 std::vector<glm::vec3> normals;
 glm::mat4 toWorld;
-float xPos, yPos, zPos, yAngle, zAngle;
-float sizeMult = 1;
 float pointSize = 1.0f;
-
+float yAngle;
 
 public:
 	OBJObject();
