@@ -27,6 +27,8 @@ public:
 	static void display_callback(GLFWwindow*);
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static bool getDisplayMode();
+	static void display_rasterizer(GLFWwindow*);
+	static void resize_rasterizer(GLFWwindow* window, int width, int height);
 };
 
 #endif

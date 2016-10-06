@@ -5,9 +5,9 @@ const char* window_title = "GLFW Starter Project";
 Cube cube(5.0f);
 
 // Load models in at startup
-OBJObject bunny = OBJObject("bunny.obj");
-OBJObject bear = OBJObject("bear.obj");
-OBJObject dragon = OBJObject("dragon.obj"); 
+OBJObject bunny;
+OBJObject bear;
+OBJObject dragon; 
 
 // Variables indicating which model to load
 bool showBunny = false;
@@ -30,8 +30,84 @@ int Window::height;
 // Display mode
 bool DISPLAY_MODE = true;	// True: OpenGL, False: Rasterizer
 
+
+
+/* RASTERIZER */
+
+static int window_width = 512, window_height = 512;
+static float* pixels = new float[window_width * window_height * 3];
+
+using namespace std;
+
+struct Color    // generic color class
+{
+	float r, g, b;  // red, green, blue
+};
+
+// Clear frame buffer
+void clearBuffer()
+{
+	Color clearColor = { 0.0, 1.0, 0.0 };   // clear color: black
+	for (int i = 0; i<window_width*window_height; ++i)
+	{
+		pixels[i * 3] = clearColor.r;
+		pixels[i * 3 + 1] = clearColor.g;
+		pixels[i * 3 + 2] = clearColor.b;
+	}
+}
+
+// Draw a point into the frame buffer
+void drawPoint(int x, int y, float r, float g, float b)
+{
+	int offset = y*window_width * 3 + x * 3;
+	pixels[offset] = r;
+	pixels[offset + 1] = g;
+	pixels[offset + 2] = b;
+}
+
+void rasterize()
+{
+	// Put your main rasterization loop here
+	// It should go over the point model and call drawPoint for every point in it
+}
+
+// Called whenever the window size changes
+void Window::resize_rasterizer(GLFWwindow* window, int width, int height)
+{
+	window_width = width;
+	window_height = height;
+	delete[] pixels;
+	pixels = new float[window_width * window_height * 3];
+}
+
+void Window::display_rasterizer(GLFWwindow* window)
+{
+	clearBuffer();
+	rasterize();
+
+	// glDrawPixels writes a block of pixels to the framebuffer
+	glDrawPixels(window_width, window_height, GL_RGB, GL_FLOAT, pixels);
+
+	// Gets events, including input such as keyboard and mouse or window resizing
+	glfwPollEvents();
+	// Swap buffers
+	glfwSwapBuffers(window);
+}
+
+void errorCallback(int error, const char* description)
+{
+	// Print error
+	fputs(description, stderr);
+}
+
+/* END RASTERIZER */
+
+
 void Window::initialize_objects()
 {
+	bunny = OBJObject("bunny.obj");
+	bear = OBJObject("bear.obj");
+	dragon = OBJObject("dragon.obj");
 }
 
 void Window::clean_up()
@@ -43,6 +119,7 @@ bool Window::getDisplayMode()
 {
 	return DISPLAY_MODE;
 }
+
 
 GLFWwindow* Window::create_window(int width, int height)
 {
@@ -74,25 +151,35 @@ GLFWwindow* Window::create_window(int width, int height)
 	glfwSwapInterval(1);
 
 	// Call the resize callback to make sure things get drawn immediately
-	Window::resize_callback(window, width, height);
+	if (DISPLAY_MODE == true) {
+		Window::resize_callback(window, width, height);
+	}
+	else {
+		Window::resize_rasterizer(window, width, height);
+	}
 
 	return window;
 }
 
 void Window::resize_callback(GLFWwindow* window, int width, int height)
 {
-	Window::width = width;
-	Window::height = height;
-	// Set the viewport size
-	glViewport(0, 0, width, height);
-	// Set the matrix mode to GL_PROJECTION to determine the proper camera properties
-	glMatrixMode(GL_PROJECTION);
-	// Load the identity matrix
-	glLoadIdentity();
-	// Set the perspective of the projection viewing frustum
-	gluPerspective(60.0, double(width) / (double)height, 1.0, 1000.0);
-	// Move camera back 20 units so that it looks at the origin (or else it's in the origin)
-	glTranslatef(0, 0, -20);
+	if (DISPLAY_MODE == false) {
+		resize_rasterizer(window, width, height);
+	}
+	else {
+		Window::width = width;
+		Window::height = height;
+		// Set the viewport size
+		glViewport(0, 0, width, height);
+		// Set the matrix mode to GL_PROJECTION to determine the proper camera properties
+		glMatrixMode(GL_PROJECTION);
+		// Load the identity matrix
+		glLoadIdentity();
+		// Set the perspective of the projection viewing frustum
+		gluPerspective(60.0, double(width) / (double)height, 1.0, 1000.0);
+		// Move camera back 20 units so that it looks at the origin (or else it's in the origin)
+		glTranslatef(0, 0, -20);
+	}
 }
 
 void Window::idle_callback()
@@ -119,34 +206,36 @@ void Window::idle_callback()
 
 void Window::display_callback(GLFWwindow* window)
 {
-	// Clear the color and depth buffers
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// Set the matrix mode to GL_MODELVIEW
-	glMatrixMode(GL_MODELVIEW);
-	// Load the identity matrix
-	glLoadIdentity();
-	
-	// Render objects
-	if (!showBunny && !showBear && !showDragon)
-	{
-		cube.draw();
-	}
-	else if (showBunny)
-	{
-		bunny.draw();
-	}
-	else if (showBear) {
-		bear.draw();
-	}
-	else if (showDragon)
-	{
-		dragon.draw();
-	}
 
-	// Gets events, including input such as keyboard and mouse or window resizing
-	glfwPollEvents();
-	// Swap buffers
-	glfwSwapBuffers(window);
+		// Clear the color and depth buffers
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Set the matrix mode to GL_MODELVIEW
+		glMatrixMode(GL_MODELVIEW);
+		// Load the identity matrix
+		glLoadIdentity();
+
+		// Render objects
+		if (!showBunny && !showBear && !showDragon)
+		{
+			cube.draw();
+		}
+		else if (showBunny)
+		{
+			bunny.draw();
+		}
+		else if (showBear) {
+			bear.draw();
+		}
+		else if (showDragon)
+		{
+			dragon.draw();
+		}
+
+		// Gets events, including input such as keyboard and mouse or window resizing
+		glfwPollEvents();
+		// Swap buffers
+		glfwSwapBuffers(window);
+	
 }
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -463,7 +552,14 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		// M RASTER
 		else if (key == GLFW_KEY_M)
 		{
-			DISPLAY_MODE = !DISPLAY_MODE;
+			if (DISPLAY_MODE) {
+				DISPLAY_MODE = false;
+				resize_rasterizer(window, Window::width, Window::height);
+			}
+			else {
+				DISPLAY_MODE = true;
+				resize_callback(window, window_width, window_height);
+			}
 		}
 
 	}
