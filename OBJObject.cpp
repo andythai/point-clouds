@@ -152,14 +152,14 @@ void OBJObject::scale(float mult)
 void OBJObject::resizePoint(float size)
 {
 	this->pointSize += size;
-	if (this->pointSize < 1.0f)
+	if (this->pointSize < 1)
 	{
-		this->pointSize = 1.0f;
+		this->pointSize = 1;
 	}
 	glPointSize(this->pointSize);
 }
 
-float OBJObject::getPointSize()
+int OBJObject::getPointSize()
 {
 	return this->pointSize;
 }
@@ -167,6 +167,6 @@ float OBJObject::getPointSize()
 void OBJObject::restore()
 {
 	this->toWorld = glm::mat4(1.0f);
-	pointSize = 1.0f;
-	glPointSize(1.0f);
+	pointSize = 1;
+	glPointSize(1);
 }

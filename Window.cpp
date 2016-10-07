@@ -2,7 +2,6 @@
 #include "OBJObject.h"
 
 const char* window_title = "GLFW Starter Project";
-Cube cube(5.0f);
 
 // Load models in at startup
 OBJObject bunny;
@@ -15,7 +14,7 @@ bool showBear = false;
 bool showDragon = false;
 
 // Settings, keep values positive
-const float POINT_SIZE_MODIFIER = 1.0f;		// How much to increase point size
+const int POINT_SIZE_MODIFIER = 1;		// How much to increase point size
 const float X_POS_MODIFIER = 1.0f;			// How much to move right on x-axis
 const float Y_POS_MODIFIER = 1.0f;			// How much to move up on y-axis
 const float Z_POS_MODIFIER = 1.0f;			// How much to move away from screen on z-axis
@@ -34,10 +33,15 @@ bool DISPLAY_MODE = true;	// True: OpenGL, False: Rasterizer
 
 /* RASTERIZER */
 
-static int window_width = 512, window_height = 512;
+static int window_width = 640, window_height = 480;
 static float* pixels = new float[window_width * window_height * 3];
 
+//float z_buffer[640][480] = { FLT_MAX };
+
+static float* z_buffer = new float[window_width * window_height];
+
 using namespace std;
+
 
 struct Color    // generic color class
 {
@@ -47,9 +51,17 @@ struct Color    // generic color class
 // Clear frame buffer
 void clearBuffer()
 {
-	Color clearColor = { 0.0, 1.0, 0.0 };   // clear color: black
+	Color clearColor = { 0.0, 0.0, 0.0 };   // clear color: black
+	/*
+	for (int i = 0; i < 640; i++) {
+		for (int j = 0; j < 480; j++) {
+			z_buffer[i][j] = FLT_MAX;
+		}
+	}
+	*/
 	for (int i = 0; i<window_width*window_height; ++i)
 	{
+		z_buffer[i] = FLT_MAX;
 		pixels[i * 3] = clearColor.r;
 		pixels[i * 3 + 1] = clearColor.g;
 		pixels[i * 3 + 2] = clearColor.b;
@@ -57,18 +69,90 @@ void clearBuffer()
 }
 
 // Draw a point into the frame buffer
-void drawPoint(int x, int y, float r, float g, float b)
+void drawPoint(int x, int y, float r, float g, float b, int z)
 {
-	int offset = y*window_width * 3 + x * 3;
-	pixels[offset] = r;
-	pixels[offset + 1] = g;
-	pixels[offset + 2] = b;
+	if (z < z_buffer[y*window_width + x]) {
+	//if (z < z_buffer[x][y]) {
+		z_buffer[y*window_width + x] = z;
+		//z_buffer[x][y] = z;
+		int offset = y*window_width * 3 + x * 3;
+		pixels[offset] = r;
+		pixels[offset + 1] = g;
+		pixels[offset + 2] = b;
+	}
 }
+
 
 void rasterize()
 {
 	// Put your main rasterization loop here
 	// It should go over the point model and call drawPoint for every point in it
+	OBJObject object;
+	if (showBunny) {
+		object = bunny;
+	}
+	else if (showDragon) {
+		object = dragon;
+	}
+	else if (showBear) {
+		object = bear;
+	}
+	else if (!showBunny && !showDragon && !showBear) {
+		return;
+	}
+
+	glm::mat4 M_matrix = object.toWorld;
+
+	glm::mat4 C_inverse = glm::lookAt(glm::vec3(0, 0, 20), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	glm::mat4 projection_space;
+	if (window_height != 0) {
+		projection_space = glm::perspective(glm::radians(60.0f), (float)window_width / (float)window_height, 1.0f, 1000.0f);
+	}
+	else {
+		return;
+	}
+	glm::mat4 D_matrix = { (float)window_width / 2, 0, 0, 0,
+		0, (float)window_height / 2, 0, 0,
+		0, 0, 0.5f, 0,
+		(float)window_width / 2, (float)window_height / 2, 0.5f, 1.0f };
+
+	for (int i = 0; i < object.vertices.size(); i++) {
+		glm::vec4 point = { object.vertices[i].x, object.vertices[i].y, object.vertices[i].z, 1 };
+		glm::vec4 p_prime = D_matrix * projection_space * C_inverse * M_matrix * point;
+		glm::vec3 pixel = { p_prime[0] / p_prime[3], p_prime[1] / p_prime[3], p_prime[2] / p_prime[3] };
+
+		float pixel_r = (glm::normalize(object.normals[i].x) + 1.0f) / 2.0f;
+		float pixel_g = (glm::normalize(object.normals[i].y) + 1.0f) / 2.0f;
+		float pixel_b = (glm::normalize(object.normals[i].z) + 1.0f) / 2.0f;
+		
+		std::vector<glm::vec2> includer;
+		int z_pixel = (M_matrix * point)[2];
+
+		int distance_modifier = z_pixel / 5;
+
+		int square_size = object.getPointSize() + distance_modifier;
+		
+		if (square_size < 1) {
+			square_size = 1;
+		}
+
+		for (int j = 0; j < square_size; j++) {
+			for (int k = 0; k < square_size; k++) {
+				glm::vec2 square_pixels = { pixel[0] + j, pixel[1] + k };
+				includer.push_back(square_pixels);
+			}
+		}
+
+		for (int m = 0; m < includer.size(); m++) {
+			glm::vec2 pixel_pop = includer[m];
+			int x_pixel = pixel_pop[0];
+			int y_pixel = pixel_pop[1];
+			
+			if (x_pixel < window_width - 1 && x_pixel > 0 && y_pixel < window_height && y_pixel > 0 && z_pixel < 20) {
+				drawPoint(x_pixel, y_pixel, pixel_r, pixel_g, pixel_b, p_prime[2]);
+			}
+		}
+	}
 }
 
 // Called whenever the window size changes
@@ -77,7 +161,9 @@ void Window::resize_rasterizer(GLFWwindow* window, int width, int height)
 	window_width = width;
 	window_height = height;
 	delete[] pixels;
+	delete[] z_buffer;
 	pixels = new float[window_width * window_height * 3];
+	z_buffer = new float[window_width * window_height];
 }
 
 void Window::display_rasterizer(GLFWwindow* window)
@@ -94,11 +180,6 @@ void Window::display_rasterizer(GLFWwindow* window)
 	glfwSwapBuffers(window);
 }
 
-void errorCallback(int error, const char* description)
-{
-	// Print error
-	fputs(description, stderr);
-}
 
 /* END RASTERIZER */
 
@@ -185,12 +266,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 void Window::idle_callback()
 {
 	// Perform any updates as necessary. Here, we will spin the object slightly.
-	if (!showDragon && !showBear && !showBunny)
-	{
-		cube.update();
-	}
-	
-	else if (showBunny)
+	if (showBunny)
 	{
 		bunny.update();
 	}
@@ -215,11 +291,7 @@ void Window::display_callback(GLFWwindow* window)
 		glLoadIdentity();
 
 		// Render objects
-		if (!showBunny && !showBear && !showDragon)
-		{
-			cube.draw();
-		}
-		else if (showBunny)
+		if (showBunny)
 		{
 			bunny.draw();
 		}

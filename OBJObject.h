@@ -16,12 +16,12 @@
 
 class OBJObject
 {
-private:
+public:
 std::vector<unsigned int> indices;
 std::vector<glm::vec3> vertices;
 std::vector<glm::vec3> normals;
 glm::mat4 toWorld;
-float pointSize = 1.0f;
+int pointSize = 1;
 float yAngle;
 
 public:
@@ -37,7 +37,7 @@ public:
 	void restore();
 	void orbit(float deg);
 	void resizePoint(float size);
-	float getPointSize();
+	int getPointSize();
 };
 
 #endif
