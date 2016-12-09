@@ -16,7 +16,14 @@ The model can be manipulated using these controls:
 
 'r': reset position, orientation and size
 
+F1 loads the bunny model.
+
+F2 loads the dragon model.
+
+F3 loads the bear model (omitted because of size).
+
 The program can be toggled between OpenGL mode and rasterizer mode using the 'm' key. 
 A z-buffer algorithm is implemented, and pixels are dynamically resized based on their distance. 
 
 bear.obj omitted due to file size.
+
