@@ -18,3 +18,5 @@ The model can be manipulated using these controls:
 
 The program can be toggled between OpenGL mode and rasterizer mode using the 'm' key. 
 A z-buffer algorithm is implemented, and pixels are dynamically resized based on their distance. 
+
+bear.obj omitted due to file size.
