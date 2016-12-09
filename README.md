@@ -1,6 +1,4 @@
-# cse167-pa1-pointclouds
-
-Project1F16
+# Point Clouds
 
 Using an .obj file, this program will read a number of 3D point positions from the file, and render them onto the screen as a model as a point cloud implementation.
 
